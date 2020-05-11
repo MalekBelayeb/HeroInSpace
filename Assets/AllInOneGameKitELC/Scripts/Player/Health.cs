@@ -52,7 +52,7 @@ public class Health : MonoBehaviour {
 		//damage from enemies
 		[System.Serializable]
 		public class EnemyDamage {
-			public string enemyTag = "Enemy"; //the tag of the enemies in the scene
+			public string enemyTag = "Individual"; //the tag of the enemies in the scene
 			public float secondsToStayInvincibleAfterAttacking = 0.7f; //the amount of time the player stays invincible after attacking an enemy
 			public float secondsToStayInvincibleAfterBeingHurt = 1.0f; //the amount of time the player stays invincible after being hurt
 		}
@@ -221,12 +221,19 @@ public class Health : MonoBehaviour {
 		Vector3 position = transform.position; 
 		// Iterate through them and find the closest one
 		foreach (GameObject go in gos)  { 
-			Vector3 diff = (go.transform.position - position);
-			float curDistance = diff.sqrMagnitude; 
-			if (curDistance < distance) { 
-				closest = go; 
-				distance = curDistance; 
-			} 
+			if(!go.Equals(this.gameObject))
+			{
+				Vector3 diff = (go.transform.position - position);
+				float curDistance = diff.sqrMagnitude;
+				if (curDistance < distance)
+				{
+					closest = go;
+					distance = curDistance;
+				}
+			}
+		
+			
+
 		}
 		if (closest == null){
 			return;
