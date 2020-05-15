@@ -213,7 +213,7 @@ public class Health : MonoBehaviour {
 	}
 	
 	void Update() {
-		
+
 		renderers = transform.GetComponentsInChildren<Renderer>(true);
 		GameObject[] gos;
 		gos = GameObject.FindGameObjectsWithTag(damage.enemyDamage.enemyTag); 

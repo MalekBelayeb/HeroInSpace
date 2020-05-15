@@ -25,7 +25,7 @@ public class FindNearestIndividual : MonoBehaviour
 		foreach (GameObject go in GameObject.FindGameObjectsWithTag("Individual"))
 		{
 			//MAYJICH FRIEND TARGET MTAA FRIEND OUALA ENEMY TARGET MTAA ENEMY DONC LAZEM IKOUN WITH DIFFERENT BEHAVIOR
-			if(go.GetComponent<OtherAIBehavior>().behavior != GetComponent<OtherAIBehavior>().behavior)
+			if((go.GetComponent<OtherAIBehavior>().behavior != GetComponent<OtherAIBehavior>().behavior) && go.GetComponent<OtherAIBehavior>().behavior != Behavior.CRYSTAL_GENERATOR)
 			{
 				float dist = Vector3.Distance(go.transform.position, transform.position);
 

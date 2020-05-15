@@ -20,7 +20,7 @@ using Boo.Lang;
 
 public enum Behavior
 {
-	PLAYER_FRIEND, PLAYER_ENEMY, MAIN_PLAYER
+	PLAYER_FRIEND, PLAYER_ENEMY, MAIN_PLAYER,CRYSTAL_GENERATOR
 }
 public class OtherAIBehavior : MonoBehaviour
 {
@@ -30,6 +30,8 @@ public class OtherAIBehavior : MonoBehaviour
 	public Material enemySkin;
 	public Behavior behavior;
 	public bool getAttacked;
+
+	public bool isHealing=false;
 
 	//movement
 	[System.Serializable]
@@ -170,7 +172,7 @@ public class OtherAIBehavior : MonoBehaviour
 	public Quaternion respawnRotation;
 	[HideInInspector]
 	public float minimumDistanceFromPlayerToRespawn;
-	private bool dead = false;
+	public bool dead = false;
 	private float deathTimer;
 	private bool colliderOnOff;
 	private bool rendererOnOff;
@@ -188,7 +190,7 @@ public class OtherAIBehavior : MonoBehaviour
 	private float enemyAngle;
 	private bool playerInView;
 	//attacked by player
-	private float hitCount;
+	public float hitCount;
 	private float lastHitCount;
 	private float attackPressedTimer;
 	private bool attackPressed;
@@ -198,7 +200,7 @@ public class OtherAIBehavior : MonoBehaviour
 	private Vector3 knockedBackDirection;
 	private Vector3 dir;
 	private Vector3 lastPosBeforePlayerDeath;
-
+	//public bool IsDead;
 	//health bar hierarchy
 	private GameObject enemyHealth;
 	private GameObject outline;
@@ -231,6 +233,7 @@ public class OtherAIBehavior : MonoBehaviour
 
 	void Start()
 	{
+
 		if(behavior == Behavior.PLAYER_FRIEND)
 		transform.GetChild(0).GetComponent<Renderer>().material = friendSkin;
 		
@@ -280,7 +283,7 @@ public class OtherAIBehavior : MonoBehaviour
 				//Idhaa ken target main player donc itaab3ou o ikhali distance maah mtaa 1f
 				if(target.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER)
 				{
-					if (dist > 1)
+					if (dist > 1.5f)
 					{
 						MovingEnemy();
 					}
@@ -300,7 +303,7 @@ public class OtherAIBehavior : MonoBehaviour
 			}
 
 			// howa l main player VS other howa enemy
-			if (behavior == Behavior.PLAYER_ENEMY && target.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER)
+			if ( (behavior == Behavior.PLAYER_ENEMY || behavior == Behavior.CRYSTAL_GENERATOR) && target.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER)
 			{
 
 				AttackedByPlayer();
@@ -314,9 +317,10 @@ public class OtherAIBehavior : MonoBehaviour
 
 			}
 
-			//RegainHealth();
+			
 
-			//if (behavior == Behavior.PLAYER_ENEMY)
+			healingFriend();
+
 			EnemyDeath();
 
 			if (behavior != target.GetComponent<OtherAIBehavior>().behavior)
@@ -653,6 +657,8 @@ public class OtherAIBehavior : MonoBehaviour
 		}
 
 	}
+
+
 
 
 	void AttackedByOther()
@@ -1351,6 +1357,18 @@ public class OtherAIBehavior : MonoBehaviour
 		}
 
 	}
+
+
+	public void healingFriend()
+	{
+
+		if((behavior == Behavior.PLAYER_FRIEND && isHealing) || behavior == Behavior.CRYSTAL_GENERATOR)
+		{
+			RegainHealth();
+		}
+
+	}
+
 
 	void OnDisable()
 	{
