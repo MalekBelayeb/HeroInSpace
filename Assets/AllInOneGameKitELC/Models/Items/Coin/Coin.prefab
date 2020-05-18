@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 461726}
   - component: {fileID: 3302792}
   - component: {fileID: 2318734}
-  - component: {fileID: 6479372}
   - component: {fileID: 11425590}
   m_Layer: 0
   m_Name: Coin
@@ -80,20 +79,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!64 &6479372
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 187204}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 1
-  m_CookingOptions: 14
-  m_Mesh: {fileID: 4300000, guid: d8ebd312906309c4fa847406f7c5597f, type: 3}
 --- !u!114 &11425590
 MonoBehaviour:
   m_ObjectHideFlags: 0

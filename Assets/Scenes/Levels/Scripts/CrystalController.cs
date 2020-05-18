@@ -6,10 +6,11 @@ public class CrystalController : MonoBehaviour
 {
 
     public GameObject generator;
+    public bool IsDestroyed;
     // Start is called before the first frame update
     void Start()
     {
-        
+        IsDestroyed = false;
     }
 
     // Update is called once per frame
@@ -39,7 +40,7 @@ public class CrystalController : MonoBehaviour
             transform.GetChild(1).gameObject.SetActive(false);
             transform.GetChild(2).gameObject.SetActive(true);
             generator.GetComponent<GenerateFinalEnemies>().generateEnemies = false;
-
+            IsDestroyed = true;
         }
     }
 }

@@ -4,13 +4,15 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: Sun_Mat
   m_Shader: {fileID: 4800000, guid: 045772399bb678644aa0b9dcdf6546c9, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
@@ -98,7 +100,7 @@ Material:
     - _B: 1
     - _BaseMetallic: 0
     - _BaseOcclusion: 0
-    - _BaseSmoothness: 0.561
+    - _BaseSmoothness: 0.21
     - _Brightness: 1
     - _CarMetallic: 0.5049318
     - _CarSmoothness: 0
@@ -106,7 +108,7 @@ Material:
     - _CarSmoothnessMin: 0.36406696
     - _ClearCoatSmoothness: 0.95
     - _Coat: 0.3
-    - _CoatAmount: 7.76
+    - _CoatAmount: 6.02
     - _CoatBump: 0.266
     - _CoatSmoothness: 0
     - _FlakeColorVariationAmount: 0.6750107
@@ -137,9 +139,9 @@ Material:
     - _Color0: {r: 1, g: 0.584, b: 0, a: 0}
     - _Color1: {r: 0.021626277, g: 0.056079105, b: 0.7352942, a: 0.953}
     - _Color3: {r: 0.035034638, g: 0.08247225, b: 0.39705884, a: 0}
-    - _ColorIn: {r: 0.8870193, g: 1, b: 0, a: 0}
+    - _ColorIn: {r: 0.9427508, g: 1, b: 0, a: 0}
     - _ColorO: {r: 0.5, g: 0.56551623, b: 1, a: 0}
-    - _ColorOut: {r: 1, g: 0.8922274, b: 0, a: 0}
+    - _ColorOut: {r: 1, g: 0.22407903, b: 0.1273585, a: 0}
     - _FlakesColor: {r: 0.73529416, g: 0.021626318, b: 0.36123332, a: 0.953}
     - _FlakesColor1: {r: 0.7794118, g: 0.9361055, b: 1, a: 0}
     - _FlakesColor2: {r: 0.74264705, g: 0.89350915, b: 1, a: 0}
