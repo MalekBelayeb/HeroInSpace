@@ -8,6 +8,7 @@ TagManager:
   - Individual
   - Coin
   - Terrain
+  - CrystalOrange
   layers:
   - Default
   - TransparentFX

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class OnChestInteract : MonoBehaviour
 {
+    public GameObject player;
 
     public GameObject levelOne;
     // Start is called before the first frame update
@@ -21,8 +22,13 @@ public class OnChestInteract : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
 
-        levelOne.GetComponent<LevelValidator>().LevelOk = true;
-        
+
+        if (int.Parse(player.GetComponent<ItemManager>().itemList[0].itemCount) == player.GetComponent<ItemManager>().itemList[0].maximumItemLimit && int.Parse(player.GetComponent<ItemManager>().itemList[1].itemCount) == player.GetComponent<ItemManager>().itemList[1].maximumItemLimit)
+        {
+            levelOne.GetComponent<LevelValidator>().LevelOk = true;
+
+        }
+
     }
 
 
