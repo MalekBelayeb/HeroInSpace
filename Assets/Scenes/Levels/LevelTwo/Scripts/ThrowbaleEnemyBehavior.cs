@@ -19,9 +19,7 @@ public class ThrowbaleEnemyBehavior : MonoBehaviour
 
     private void OnCollisionStay(Collision collision)
     {
-        if(collision.collider.tag == "Individual")
-        {
             Destroy(gameObject);
-        }
+        
     }
 }

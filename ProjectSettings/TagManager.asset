@@ -9,6 +9,9 @@ TagManager:
   - Coin
   - Terrain
   - CrystalOrange
+  - Heart
+  - Water
+  - Elevator
   layers:
   - Default
   - TransparentFX

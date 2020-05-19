@@ -11,6 +11,7 @@ public class CanonController : MonoBehaviour
     float x=0f;
     public GameObject EnemyToThrow;
     GameObject CurrEnemyToThrow;
+    float distanceFromPlayer = 0f;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +21,8 @@ public class CanonController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (Vector3.Distance(transform.position, player.transform.position) < DistanceToChasePlayerFrom)
+        distanceFromPlayer = Vector3.Distance(transform.position, player.transform.position);
+        if (distanceFromPlayer < DistanceToChasePlayerFrom)
         {
         
             //transform.LookAt(player.transform);
@@ -32,7 +34,7 @@ public class CanonController : MonoBehaviour
             {
             
                 CurrEnemyToThrow = Instantiate(EnemyToThrow, transform.position+new Vector3(0,0.6f,0), Quaternion.identity);
-                CurrEnemyToThrow.GetComponent<Rigidbody>().AddForce(transform.forward*10000);
+                CurrEnemyToThrow.GetComponent<Rigidbody>().AddForce(transform.forward* 3000 * distanceFromPlayer);
                 x = 0f;
             
             }
