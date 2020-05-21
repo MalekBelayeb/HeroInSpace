@@ -59,8 +59,7 @@ public class MenuController : MonoBehaviour
     private void Start()
     {
         menuNumber = 1;
-        Cursor.lockState = CursorLockMode.None;
-
+       
     }
     #endregion
 

@@ -30,17 +30,18 @@ public class OtherHealing : MonoBehaviour
     {
         if (collision.collider.tag == "Individual")
         {
-            if (collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER || collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.PLAYER_FRIEND)
+            if (collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER )
             {
                 healing(true);
             }
         }
+
     }
     private void OnCollisionStay(Collision collision)
     {
         if(collision.collider.tag == "Individual")
         {
-            if(collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER || collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.PLAYER_FRIEND)
+            if(collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER )
             {
                 healing(true);
             }
@@ -50,12 +51,13 @@ public class OtherHealing : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision.collider.tag == "Individual")
+        if (collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER  )
         {
-            if (collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER || collision.collider.gameObject.GetComponent<OtherAIBehavior>().behavior == Behavior.PLAYER_FRIEND)
-            {
+           
                 healing(false);
-            }
+                Debug.Log("Nohealing");
+
+           
 
         }
     }

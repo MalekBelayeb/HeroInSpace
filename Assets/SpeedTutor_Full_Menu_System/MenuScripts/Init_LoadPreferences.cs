@@ -61,7 +61,7 @@ public class Init_LoadPreferences : MonoBehaviour
             {
                 float localVolume = PlayerPrefs.GetFloat("masterVolume");
 
-                volumeText.text = localVolume.ToString("0.0");
+             //   volumeText.text = localVolume.ToString("0.0");
                 volumeSlider.value = localVolume;
                 AudioListener.volume = localVolume;
             }
