@@ -22,4 +22,12 @@ public class LoadScene : MonoBehaviour
     {
         SceneManager.LoadScene("LevelOne");
     }
+
+
+    public void startLevelTwo()
+    {
+
+        SceneManager.LoadScene("LevelTwo");
+
+    }
 }

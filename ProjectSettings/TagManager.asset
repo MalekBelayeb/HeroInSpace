@@ -12,6 +12,7 @@ TagManager:
   - Heart
   - Water
   - Elevator
+  - Lava
   layers:
   - Default
   - TransparentFX

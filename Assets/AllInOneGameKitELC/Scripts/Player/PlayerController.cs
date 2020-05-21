@@ -502,18 +502,18 @@ public class PlayerController : MonoBehaviour {
 	private bool enabledLastUpdate;
 	
 	//private jumping variables
-	private int currentJumpNumber; //the number of the most current jump performed
+	public int currentJumpNumber; //the number of the most current jump performed
 	private int totalJumpNumber; //the total amount of jumps set
 	private float airSpeed; //player's movement speed in mid-air
 	private float jumpTimer; //time since last jump was performed
 	private float jumpPerformedTime; //time since last jump was first performed
 	private bool inMidAirFromJump; //player is in mid-air as a result of jumping
-	private bool jumpEnabled; //enables jumping while the script is enabled and disables jumping when the script is disabled
+	public bool jumpEnabled; //enables jumping while the script is enabled and disables jumping when the script is disabled
 	private bool jumpPossible; //determines whether a jump is possible or not
 	private bool doubleJumpPossible = true; //determines whether a double jump is possible or not
-	private bool jumpPressed; //"Jump" button was pressed
+	public bool jumpPressed; //"Jump" button was pressed
 	private float jumpPressedTimer; //time since "Jump" button was last pressed
-	private bool jumpPerformed; //determines whether a jump was just performed
+	public bool jumpPerformed; //determines whether a jump was just performed
 	private bool headHit; //determines if player's head hit the ceiling
 	private float yPos; //player's position on the y-axis
 	private float yVel; //player's y velocity
@@ -1172,7 +1172,8 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void FixedUpdate () {
-		
+
+	
 		//only allow regular movement if the player is not swimming
 		if (!inWater){
 			ChangeColliderHeightForCrouch();
@@ -1190,7 +1191,7 @@ public class PlayerController : MonoBehaviour {
 		if (!inWater){
 			AvoidSlidingWhileClimbing();
 			
-			MovingPlatformParenting();
+			//MovingPlatformParenting();
 			
 			Attacks();
 			
@@ -1217,29 +1218,29 @@ public class PlayerController : MonoBehaviour {
 		ranThroughUpdateCount++;
 		
 		if (!inWater){
-			CheckIfWallJumpIsPossible();
+			//CheckIfWallJumpIsPossible();
 			
-			DirectionOfWallJump();
+			//DirectionOfWallJump();
 			
-			PerformWallJump();
+			//PerformWallJump();
 			
-			CheckForWallRigidbody();
+			//CheckForWallRigidbody();
 			
-			KeepRigidbodyFromStickingToWall();
+			//KeepRigidbodyFromStickingToWall();
 			
 			//wall and ladder climbing
 			if (climbing.Length > 0){
-				CheckIfPlayerCanClimb();
+				//CheckIfPlayerCanClimb();
 				
-				ClimbingWall();
+				//ClimbingWall();
 				
-				JumpOffOfClimb();
+				//JumpOffOfClimb();
 				
-				ClimbableObjectEdgeDetection();
+				//ClimbableObjectEdgeDetection();
 				
-				PullingUpClimbableObject();
+				//PullingUpClimbableObject();
 				
-				AnimatingClimbing();
+				//AnimatingClimbing();
 			}
 			
 			RotatePlayer();
@@ -1253,10 +1254,11 @@ public class PlayerController : MonoBehaviour {
 			GettingMovementDirection();
 		}
 		
-		LockAxisForSideScrolling();
+	LockAxisForSideScrolling();
 		
 		//only allow regular movement if the player is not swimming
 		if (!inWater){
+			
 			SlopeSliding();
 			
 			PreventBouncing();
@@ -1265,14 +1267,14 @@ public class PlayerController : MonoBehaviour {
 			
 			MovePlayer();
 			
-			AvoidFallingWhileClimbing();
+			//AvoidFallingWhileClimbing();
 			
 			CrouchAttack();
 		}
 		
-		SwitchingToFirstPersonMode();
+		//SwitchingToFirstPersonMode();
 		
-		Swim();
+		//Swim();
 	
 	}
 	
@@ -3251,6 +3253,11 @@ public class PlayerController : MonoBehaviour {
 			Debug.DrawLine(pos + transform.forward*(maxGroundedRadius2*0.75f) - transform.right*(maxGroundedRadius2*0.75f) + maxGroundedHeight2, pos + transform.forward*(maxGroundedRadius2*0.75f) - transform.right*(maxGroundedRadius2*0.75f) + maxGroundedDistanceDown, Color.yellow);
 		}
 		//determining if grounded
+
+		if (sliding)
+			grounded.currentlyGrounded = true;
+
+
 		if (Physics.Linecast(pos + maxGroundedHeight2, pos + maxGroundedDistanceDown, out hit, noWaterCollisionLayers)
 		||	Physics.Linecast(pos - transform.forward*(maxGroundedRadius2/2) + maxGroundedHeight2, pos - transform.forward*(maxGroundedRadius2/2) + maxGroundedDistanceDown, out hit, noWaterCollisionLayers)
 		||	Physics.Linecast(pos + transform.forward*(maxGroundedRadius2/2) + maxGroundedHeight2, pos + transform.forward*(maxGroundedRadius2/2) + maxGroundedDistanceDown, out hit, noWaterCollisionLayers)
@@ -3270,10 +3277,11 @@ public class PlayerController : MonoBehaviour {
 		||	Physics.Linecast(pos + transform.forward*(maxGroundedRadius2*0.75f) - transform.right*(maxGroundedRadius2*0.75f) + maxGroundedHeight2, pos + transform.forward*(maxGroundedRadius2*0.75f) - transform.right*(maxGroundedRadius2*0.75f) + maxGroundedDistanceDown, out hit, noWaterCollisionLayers)){
 			
 			//if player is not on water
-			if (!colliderInWall && (Physics.Linecast(pos + maxGroundedHeight2, pos + maxGroundedDistanceDown, out hit, noWaterCollisionLayers) || sliding || !rigidBody)){
+			if (!colliderInWall && (Physics.Linecast(pos + maxGroundedHeight2, pos + maxGroundedDistanceDown, out hit, noWaterCollisionLayers)  || !rigidBody)){
 				if (!angHit){
 					raycastSlopeAngle = (Mathf.Acos(Mathf.Clamp(hit.normal.y, -1f, 1f))) * 57.2958f;
 				}
+
 				grounded.currentlyGrounded = true;
 			}
 			else {
@@ -3756,18 +3764,29 @@ public class PlayerController : MonoBehaviour {
 					}
 					//moving player
 					else {
+
 						rigidBody.velocity = moveDirection;
 					}
 					
 				}
 				// move the player if not grounded
 				else {
-					
+
 					//moving player
+					touchingWall = false;
+					pushingThroughWall = false;
+					sliding = false;
+
+					inCorner = true;
+					rigidBody.velocity = moveDirection;
 					if (touchingWall && pushingThroughWall || raycastSlopeAngle > slopeLimit || sliding){
-						rigidBody.velocity = moveDirection;
+					//	rigidBody.velocity = moveDirection;
 					}
 					else {
+						Debug.Log("sssss");
+
+
+						/*
 						if (!inCorner){
 							//keeping player from moving in unwanted directions
 							rigidBody.velocity = Vector3.zero;
@@ -3779,11 +3798,12 @@ public class PlayerController : MonoBehaviour {
 							rigidBody.velocity = new Vector3(moveDirection.x, 0, moveDirection.z);
 							//moving player
 							rigidBody.MovePosition(transform.position + new Vector3(0, moveDirection.y, 0) * Time.deltaTime);
-						}
+						}*/
+
 					}
-					
+
 					//switching value back and forth when in corner
-					if (inCorner){
+				/*	if (inCorner){
 						if (updateFrame == 1){
 							updateFrame = 2;
 						}
@@ -3795,7 +3815,7 @@ public class PlayerController : MonoBehaviour {
 					else {
 						updateFrame = 2;
 					}
-					
+					*/
 				}
 				
 			}
@@ -6610,6 +6630,12 @@ public class PlayerController : MonoBehaviour {
 	
 	void OnCollisionStay (Collision hit) {
 		
+		if(hit.collider.tag=="Terrain")
+		{
+			grounded.currentlyGrounded = true;
+		}
+
+
 		foreach (ContactPoint contact in hit.contacts) {
 			contactPoint = contact.point;
 			collisionSlopeAngle = Vector3.Angle(Vector3.up, contact.normal);

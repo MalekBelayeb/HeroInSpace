@@ -7,6 +7,8 @@ using UnityEngine.EventSystems;
 
 public class MenuController : MonoBehaviour
 {
+
+
     #region Default Values
     [Header("Default Menu Values")]
     [SerializeField] private float defaultBrightness;
@@ -57,6 +59,8 @@ public class MenuController : MonoBehaviour
     private void Start()
     {
         menuNumber = 1;
+        Cursor.lockState = CursorLockMode.None;
+
     }
     #endregion
 
@@ -155,6 +159,8 @@ public class MenuController : MonoBehaviour
             menuDefaultCanvas.SetActive(false);
             newGameDialog.SetActive(true);
             menuNumber = 7;
+
+            Debug.Log("ssssssss");
         }
     }
     #endregion
@@ -259,6 +265,8 @@ public class MenuController : MonoBehaviour
         if (ButtonType == "Yes")
         {
             SceneManager.LoadScene(1);
+
+            PlayerPrefs.SetInt("LastLevelUnlocked", 1);
         }
 
         if (ButtonType == "No")
