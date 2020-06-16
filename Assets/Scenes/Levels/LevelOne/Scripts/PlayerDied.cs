@@ -15,16 +15,15 @@ public class PlayerDied : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if(GetComponent<Health>())
         {
             if(GetComponent<Health>().currentHealth==130  )
             {
-                SceneManager.LoadScene("GameOverRetry");
+               // SceneManager.LoadScene("GameOverRetry");
             }
         }
     }
 
 
-
-  
 }
