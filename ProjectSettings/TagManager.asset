@@ -13,6 +13,7 @@ TagManager:
   - Water
   - Elevator
   - Lava
+  - joystickGo
   layers:
   - Default
   - TransparentFX

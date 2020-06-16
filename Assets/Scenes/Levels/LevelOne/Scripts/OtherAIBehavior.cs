@@ -16,7 +16,6 @@
 
 using UnityEngine;
 using System.Collections;
-using Boo.Lang;
 
 public enum Behavior
 {
@@ -229,11 +228,13 @@ public class OtherAIBehavior : MonoBehaviour
 	private float healthWidth;
 	private float secondsToShowHealthBarAfterEnemyDeath;
 
+	 VariableJoystick variableJoystick;
+
 	public LayerMask collisionLayers = ~(1 << 2); //the layers that the detectors (raycasts/linecasts) will collide with
 
 	void Start()
 	{
-
+		variableJoystick = GameObject.FindGameObjectWithTag("joystickGo").GetComponent<VariableJoystick>();
 		if(behavior == Behavior.PLAYER_FRIEND)
 		transform.GetChild(0).GetComponent<Renderer>().material = friendSkin;
 		
@@ -257,20 +258,23 @@ public class OtherAIBehavior : MonoBehaviour
 		if(behavior != Behavior.MAIN_PLAYER)
 		{
 
-			
-			SettingVariables();
+			if(target)
+			{
+				SettingVariables();
 
-			GetAngleBetweenPlayer();
+				GetAngleBetweenPlayer();
 
-			GetDistanceFromPlayer();
+				GetDistanceFromPlayer();
 
-			RotateTowardsPlayer();
+				RotateTowardsPlayer();
 
-			RotateTowardsPlayerSideScrolling();
+				RotateTowardsPlayerSideScrolling();
 
-			SetHealthBarDeathPosition();
+				SetHealthBarDeathPosition();
 
-			LockingAxisForSideScrolling();
+				LockingAxisForSideScrolling();
+
+			}
 
 			if (behavior == Behavior.PLAYER_ENEMY)
 			{
@@ -280,28 +284,35 @@ public class OtherAIBehavior : MonoBehaviour
 			}
 			else if (behavior == Behavior.PLAYER_FRIEND)
 			{
-				//Idhaa ken target main player donc itaab3ou o ikhali distance maah mtaa 1f
-				if(target.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER)
+
+				if(target)
 				{
-					if (dist > 1.5f)
+					//Idhaa ken target main player donc itaab3ou o ikhali distance maah mtaa 1f
+					if (target.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER)
 					{
-						MovingEnemy();
-					}
+						if (dist > 1.5f)
+						{
+							MovingEnemy();
+						}
+						else
+						{   //Ki youseel lel player yekeef 
+							GetComponent<Animator>().SetBool("Walking", false);
+						}
+					}//Ken eneeemy osdom aaalih toul
 					else
-					{   //Ki youseel lel player yekeef 
-						GetComponent<Animator>().SetBool("Walking", false);
+					{
+
+						MovingEnemy();
+
 					}
-				}//Ken eneeemy osdom aaalih toul
-				else
-				{
-				
-					MovingEnemy();
 
 				}
 
-
 			}
+			if(target)
+			{
 
+			
 			// howa l main player VS other howa enemy
 			if ( (behavior == Behavior.PLAYER_ENEMY || behavior == Behavior.CRYSTAL_GENERATOR) && target.GetComponent<OtherAIBehavior>().behavior == Behavior.MAIN_PLAYER)
 			{
@@ -331,9 +342,9 @@ public class OtherAIBehavior : MonoBehaviour
 			StabilizeEnemy();
 		
 		}
+		}
 
 
-	
 
 	}
 
@@ -347,14 +358,23 @@ public class OtherAIBehavior : MonoBehaviour
 		//setting variables
 		//attack
 		attackPower = attack.attackPower;
-		if (damage.acquirePlayerAttackButtonFromPlayerIfPossible && target.GetComponent<PlayerController>())
+
+		if(target)
 		{
-			playerAttackButton = target.GetComponent<PlayerController>().attacking.attackInputButton;
+			if(target.GetComponent<PlayerController>())
+			{
+				if (damage.acquirePlayerAttackButtonFromPlayerIfPossible && target.GetComponent<PlayerController>())
+				{
+
+					playerAttackButton = target.GetComponent<PlayerController>().attacking.attackInputButton;
+				}
+				else
+				{
+					playerAttackButton = damage.playerAttackButton;
+				}
+			}
 		}
-		else
-		{
-			playerAttackButton = damage.playerAttackButton;
-		}
+		
 		//health
 		maximumHealth = health.maximumHealth;
 		regainHealthOverTime = health.regainHealthOverTime;
@@ -389,8 +409,12 @@ public class OtherAIBehavior : MonoBehaviour
 	{
 
 		//getting angle from player
-		playerAngle = Vector3.Angle(transform.position - target.position, target.forward);
-		enemyAngle = Vector3.Angle(target.position - transform.position, transform.forward);
+		if(target)
+		{
+			playerAngle = Vector3.Angle(transform.position - target.position, target.forward);
+			enemyAngle = Vector3.Angle(target.position - transform.position, transform.forward);
+
+		}
 
 		if (enemyAngle <= movement.viewpointPlayerMustBeInToFollow)
 		{
@@ -406,18 +430,22 @@ public class OtherAIBehavior : MonoBehaviour
 	void GetDistanceFromPlayer()
 	{
 
-		//move towards player
-		dir = new Vector3(target.position.x, transform.position.y, target.position.z) - transform.position;
-		dir.Normalize();
-		dist = Mathf.Sqrt(Mathf.Pow(Mathf.Abs(target.position.x - transform.position.x), 2) + Mathf.Pow(Mathf.Abs(target.position.z - transform.position.z), 2));
-		distY = Mathf.Sqrt(Mathf.Pow(Mathf.Abs(target.position.y - transform.position.y), 2));
+		if(target)
+		{
+			//move towards player
+			dir = new Vector3(target.position.x, transform.position.y, target.position.z) - transform.position;
+			dir.Normalize();
+			dist = Mathf.Sqrt(Mathf.Pow(Mathf.Abs(target.position.x - transform.position.x), 2) + Mathf.Pow(Mathf.Abs(target.position.z - transform.position.z), 2));
+			distY = Mathf.Sqrt(Mathf.Pow(Mathf.Abs(target.position.y - transform.position.y), 2));
+		}
+		
 	
 	}
 
 
 	void RotateTowardsPlayer()
 	{
-
+		
 		//rotate towards player
 		if (dist <= movement.distanceToFacePlayerFrom && distY <= 3 && (playerInView || (movement.sideScrolling.lockMovementOnZAxis || movement.sideScrolling.lockMovementOnXAxis)))
 		{
@@ -708,24 +736,28 @@ public class OtherAIBehavior : MonoBehaviour
 
 	void AttackedByPlayer()
 	{
-
-		//if the "Attack" button was pressed, attackPressed equals true
-		if ((Input.GetButton(playerAttackButton) && !attackButtonPressed || target.GetComponent<PlayerController>() && !target.GetComponent<PlayerController>().attackFinishedLastUpdate)
-		&& (!target.GetComponent<PlayerController>() || target.GetComponent<PlayerController>() && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.Joystick1Button8) && !target.GetComponent<PlayerController>().crouchCancelsAttack && !target.GetComponent<PlayerController>().currentlyOnWall && !target.GetComponent<PlayerController>().currentlyClimbingWall))
+		
+		if(target)
 		{
-			attackPressedTimer = 0.0f;
-			attackPressed = true;
-			playerCanAttack = true;
-			attackButtonPressed = true;
-		}
-		else
-		{
-			attackPressedTimer += 0.02f;
-			if (!Input.GetButton(playerAttackButton))
+			//if the "Attack" button was pressed, attackPressed equals true
+			if (((Input.GetButton(playerAttackButton) || variableJoystick.GetButtonDown("Attack")) && !attackButtonPressed || target.GetComponent<PlayerController>() && !target.GetComponent<PlayerController>().attackFinishedLastUpdate)
+			&& (!target.GetComponent<PlayerController>() || target.GetComponent<PlayerController>() && (!Input.GetKey(KeyCode.LeftControl) || variableJoystick.GetButtonDown("Attack") == false) && !Input.GetKey(KeyCode.Joystick1Button8) && !target.GetComponent<PlayerController>().crouchCancelsAttack && !target.GetComponent<PlayerController>().currentlyOnWall && !target.GetComponent<PlayerController>().currentlyClimbingWall))
 			{
-				attackButtonPressed = false;
+				attackPressedTimer = 0.0f;
+				attackPressed = true;
+				playerCanAttack = true;
+				attackButtonPressed = true;
+			}
+			else
+			{
+				attackPressedTimer += 0.02f;
+				if (!Input.GetButton(playerAttackButton) || variableJoystick.GetButtonDown("Attack") == false)
+				{
+					attackButtonPressed = false;
+				}
 			}
 		}
+
 
 		//wait 0.2 seconds for attackPressed to become false
 		//this allows the player to press the "Attack" button slightly early and still attack even if they were not close enough to the enemy

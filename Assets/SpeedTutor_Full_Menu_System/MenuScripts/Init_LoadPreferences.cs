@@ -59,11 +59,11 @@ public class Init_LoadPreferences : MonoBehaviour
             //VOLUME
             if (PlayerPrefs.HasKey("masterVolume"))
             {
-                float localVolume = PlayerPrefs.GetFloat("masterVolume");
+               /* float localVolume = PlayerPrefs.GetFloat("masterVolume");
 
              //   volumeText.text = localVolume.ToString("0.0");
                 volumeSlider.value = localVolume;
-                AudioListener.volume = localVolume;
+                AudioListener.volume = localVolume;*/
             }
             else
             {
@@ -73,11 +73,11 @@ public class Init_LoadPreferences : MonoBehaviour
             //CONTROLLER SENSITIVITY
             if (PlayerPrefs.HasKey("masterSen"))
             {
-                float localSensitivity = PlayerPrefs.GetFloat("masterSen");
+              /*  float localSensitivity = PlayerPrefs.GetFloat("masterSen");
 
                 controllerText.text = localSensitivity.ToString("0");
                 controllerSlider.value = localSensitivity;
-                menuController.controlSenFloat = localSensitivity;
+                menuController.controlSenFloat = localSensitivity;*/
             }
             else
             {
@@ -87,7 +87,7 @@ public class Init_LoadPreferences : MonoBehaviour
             //INVERT Y
             if (PlayerPrefs.HasKey("masterInvertY"))
             {
-                if (PlayerPrefs.GetInt("masterInvertY") == 1)
+               /* if (PlayerPrefs.GetInt("masterInvertY") == 1)
                 {
                     invertYToggle.isOn = true;
 
@@ -96,7 +96,7 @@ public class Init_LoadPreferences : MonoBehaviour
                 else
                 {
                     invertYToggle.isOn = false;
-                }
+                }*/
             }
         }
     }

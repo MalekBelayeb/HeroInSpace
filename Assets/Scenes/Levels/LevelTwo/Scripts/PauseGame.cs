@@ -37,7 +37,7 @@ public class PauseGame : MonoBehaviour
 
     void ResumeGame()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        //Cursor.lockState = CursorLockMode.Locked;
         transform.GetChild(0).gameObject.SetActive(false);
         Time.timeScale = 1f;
 

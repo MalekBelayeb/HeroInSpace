@@ -25,7 +25,8 @@ public class PlayerController : MonoBehaviour {
 	public Transform playerCamera; //the camera set to follow the player
 	public float gravity = 20.00f; //the amount of downward force, or "gravity," that is constantly being applied to the player
 	public float slopeLimit = 25.00f; //the maximum angle of a slope you can stand on without sliding down
-	
+	public VariableJoystick variableJoystick;
+
 	//Grounded
 	[System.Serializable]
 	public class Grounded {
@@ -770,6 +771,11 @@ public class PlayerController : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+
+		if(Application.platform != RuntimePlatform.WindowsEditor)
+		{
+			attacking.attackInputButton = "None";
+		}
 		
 		//getting the player's CharacterController component (if he has one)
 		if (GetComponent<CharacterController>() && GetComponent<CharacterController>().enabled){
@@ -981,7 +987,7 @@ public class PlayerController : MonoBehaviour {
 			}
 			
 			//if the "Jump" button was pressed, jumpPressed equals true
-			if (Input.GetButtonDown("Jump")){
+			if (Input.GetButtonDown("Jump") ||variableJoystick.GetButtonDown("Jump") ){
 				jumpPressedTimer = 0.0f;
 				jumpPressed = true;
 			}
@@ -997,15 +1003,15 @@ public class PlayerController : MonoBehaviour {
 
 			//jump
 			if (grounded.currentlyGrounded){
-				if (jumpPressed && jumpPossible && !jumpPerformed && totalJumpNumber > 0 && !onWallLastUpdate && jumpEnabled && (raycastSlopeAngle > slopeLimit && (uphill && jumping.allowJumpWhenSlidingFacingUphill || !uphill && jumping.allowJumpWhenSlidingFacingDownhill || inBetweenSlidableSurfaces) || raycastSlopeAngle <= slopeLimit) && canCrouchToAction){
+				if (jumpPressed && jumpPossible && !jumpPerformed && totalJumpNumber > 0  && jumpEnabled && (raycastSlopeAngle > slopeLimit && (uphill && jumping.allowJumpWhenSlidingFacingUphill || !uphill  || inBetweenSlidableSurfaces) || raycastSlopeAngle <= slopeLimit) && canCrouchToAction){
 					Jump();
 				}
 				doubleJumpPossible = true;
 			}
 			
 			//double jump
-			if (Input.GetButtonDown("Jump") && doubleJumpPossible && !grounded.currentlyGrounded && allowDoubleJump2 && jumpEnabled && (doubleJumpPerformableIfInMidAirInGeneral2 || !doubleJumpPerformableIfInMidAirInGeneral2 && inMidAirFromJump) && (jumping.doubleJumpPerformableOutOfWallJump || !inMidAirFromWallJump) && !currentlyOnWall && !currentlyClimbingWall && !onWallLastUpdate && canCrouchToAction){
-				if ((!Physics.Raycast(pos, Vector3.down, out hit, 0.5f, noWaterCollisionLayers) || Physics.Raycast(pos, Vector3.down, out hit, 0.5f, noWaterCollisionLayers) && hit.transform.GetComponent<Collider>().isTrigger) && moveDirection.y < 0 || !grounded.currentlyGrounded && moveDirection.y >= 0){
+			if ((Input.GetButtonDown("Jump")||variableJoystick.GetButtonDown("Jump") )&& doubleJumpPossible && !grounded.currentlyGrounded && allowDoubleJump2 && jumpEnabled && (doubleJumpPerformableIfInMidAirInGeneral2 || !doubleJumpPerformableIfInMidAirInGeneral2 && inMidAirFromJump) && (jumping.doubleJumpPerformableOutOfWallJump || !inMidAirFromWallJump) && !currentlyOnWall && !currentlyClimbingWall && !onWallLastUpdate && canCrouchToAction){
+				if ((!Physics.Raycast(pos, Vector3.down, out hit, 0.5f, noWaterCollisionLayers) || Physics.Raycast(pos, Vector3.down, out hit, 0.5f, noWaterCollisionLayers) && hit.transform.GetComponent<Collider>().isTrigger) && moveDirection.y < 0 ||   moveDirection.y >= 0){
 					DoubleJump();
 					jumpPressed = false;
 					doubleJumpPossible = false;
@@ -1565,7 +1571,7 @@ public class PlayerController : MonoBehaviour {
 		//attack
 		//if the "Attack" button was pressed (and player is not going in to a crouch), attackPressed equals true
 		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.Joystick1Button8) || !movement.crouching.allowCrouching){
-			if (Input.GetButton(attacking.attackInputButton) && !attackButtonPressed){
+			if ((Input.GetButton(attacking.attackInputButton) || variableJoystick.GetButtonDown("Attack")) && !attackButtonPressed){
 				attackPressedTimer = 0.0f;
 				attackPressed = true;
 				canAttack = true;
@@ -1573,7 +1579,8 @@ public class PlayerController : MonoBehaviour {
 			}
 			else {
 				attackPressedTimer += 0.02f;
-				if (!Input.GetButton(attacking.attackInputButton)){
+				if (!Input.GetButton(attacking.attackInputButton) || variableJoystick.GetButtonDown("Attack")==false)
+				{
 					attackButtonPressed = false;
 				}
 			}
@@ -1633,10 +1640,23 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void GettingRotationDirection () {
-		
+
+
 		//getting the direction to rotate towards
-		directionVector = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-        if (directionVector != Vector3.zero) {
+		if(Input.GetAxis("Horizontal")!=0 || Input.GetAxis("Vertical")!=0)
+		{
+			directionVector = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+
+		}
+		else if (variableJoystick.GetAxis("Horizontal")!=0 || variableJoystick.GetAxis("Vertical") != 0)
+		{
+			directionVector = new Vector3(variableJoystick.GetAxis("Horizontal"), 0, variableJoystick.GetAxis("Vertical"));
+
+		}else
+		{
+			directionVector = Vector3.zero;
+		}
+		if (directionVector != Vector3.zero) {
 			
             //getting the length of the direction vector and normalizing it
             float directionLength = directionVector.magnitude;
@@ -2525,65 +2545,7 @@ public class PlayerController : MonoBehaviour {
 			else {
 				climbingMovement = climbMovementSpeed2;
 			}
-			
-			//getting direction to climb towards
-			if (directionVector.magnitude != 0){
-				
-				//climbing horizontally and vertically
-				if (climbHorizontally2 && climbVertically2 && (!movement.sideScrolling.lockMovementOnXAxis && !movement.sideScrolling.lockMovementOnZAxis)){
-					
-					//if we have reached the top, bottom, right, or left point, do not allow movement in any direction
-					if (stopAtSides2 && (reachedRightPoint && Input.GetAxis("Horizontal") > 0 || reachedLeftPoint && Input.GetAxis("Horizontal") < 0)
-					&& (!downCanBePressed || reachedTopPoint && Input.GetAxis("Vertical") > 0 || reachedBottomPoint && Input.GetAxis("Vertical") < 0)){
-						climbDirection = Vector3.zero;
-					}
-					//if we have reached the left or right point, do not allow horizontal movement in that direction
-					else if (downCanBePressed && stopAtSides2 && (reachedRightPoint && Input.GetAxis("Horizontal") > 0 || reachedLeftPoint && Input.GetAxis("Horizontal") < 0)
-					&& ((!reachedTopPoint || Input.GetAxis("Vertical") <= 0) && (!reachedBottomPoint || Input.GetAxis("Vertical") >= 0))){
-						climbDirection = (Input.GetAxis("Vertical")*transform.up) * climbingMovement;
-					}
-					//if down cannot be pressed, or we have reached the top or bottom point, do not allow vertical movement in that direction
-					else if (!downCanBePressed || reachedTopPoint && Input.GetAxis("Vertical") > 0 || reachedBottomPoint && Input.GetAxis("Vertical") < 0){
-						climbDirection = (Input.GetAxis("Horizontal")*transform.right) * climbingMovement;
-					}
-					//if down can be pressed, and we have not reached the top, bottom, right, or left point, allow movement in every direction
-					else if (downCanBePressed){
-						climbDirection = (Input.GetAxis("Horizontal")*transform.right + Input.GetAxis("Vertical")*transform.up) * climbingMovement;
-					}
-					
-				}
-				//climbing horizontally
-				else if (climbHorizontally2 && (!movement.sideScrolling.lockMovementOnXAxis && !movement.sideScrolling.lockMovementOnZAxis)){
-					
-					//if we have not reached the sides of the climbable object
-					if (!stopAtSides2 || (!reachedRightPoint || Input.GetAxis("Horizontal") < 0) && (!reachedLeftPoint || Input.GetAxis("Horizontal") > 0)){
-						climbDirection = (Input.GetAxis("Horizontal")*transform.right) * climbingMovement;
-					}
-					else {
-						climbDirection = Vector3.zero;
-					}
-					
-				}
-				//climbing vertically
-				else if (climbVertically2){
-					
-					//if down cannot be pressed or we have reached the top point, do not allow vertical movement in that direction
-					if (!downCanBePressed || reachedTopPoint && Input.GetAxis("Vertical") > 0 || reachedBottomPoint && Input.GetAxis("Vertical") < 0){
-						climbDirection = Vector3.zero;
-					}
-					//if not, allow vertical movement
-					else if (downCanBePressed){
-						climbDirection = (Input.GetAxis("Vertical")*transform.up) * climbingMovement;
-					}
-				}
-				else {
-					climbDirection = Vector3.zero;
-				}
-				
-			}
-			else {
-				climbDirection = Vector3.Slerp(climbDirection, Vector3.zero, 15 * Time.deltaTime);
-			}
+	
 			
 			//moving player on wall
 			if (characterController && characterController.enabled){
@@ -2595,12 +2557,14 @@ public class PlayerController : MonoBehaviour {
 			
 		}
 		else {
+		
 			climbDirection = Vector3.zero;
 			downCanBePressed = false;
 			climbedUpAlready = false;
 			climbingMovement = 0;
 			beginClimbBurst = true;
 			switchedDirection = false;
+		
 		}
 		
 		if (directionVector.magnitude != 0 || currentlyOnWall || inMidAirFromWallJump){
@@ -2663,10 +2627,14 @@ public class PlayerController : MonoBehaviour {
 				}
 			}
 		}
-		lastAxis = Input.GetAxisRaw("Horizontal");
 		
-	}
+		if(Input.GetAxisRaw("Horizontal")!=0)
+		lastAxis = Input.GetAxisRaw("Horizontal");
+		if (variableJoystick.GetAxis("Horizontal") !=0)
+			lastAxis = variableJoystick.GetAxis("Horizontal");
 	
+	}
+
 	void JumpOffOfClimb () {
 		
 		//jumping off of ladder/wall
@@ -2768,175 +2736,31 @@ public class PlayerController : MonoBehaviour {
 		
 	}
 	
-	void AnimatingClimbing () {
-		
-		//animating player climbing wall
-		if (animator != null){
-			
-			if (!pullingUp){
-				
-				//animating player when he turns on to wall
-				if (currentlyClimbingWall || turnBack || back2){
-					if (animator.GetFloat("climbState") < 1){
-						animator.CrossFade("Climbing", 0f, -1, 0f);
-						animator.SetFloat("climbState", 1);
-					}
-				}
-				else {
-					if ((grounded.currentlyGrounded && animator.GetFloat("climbState") != 0 || animator.GetCurrentAnimatorStateInfo(0).IsName("Climbing")) && !inMidAirFromJump){
-						animator.CrossFade("Movement", 0f, -1, 0f);
-					}
-					animator.SetFloat("climbState", 0);
-					
-				}
-				
-				//animating the player's climbing motions while he is on a wall
-				if (currentlyClimbingWall){
-					if (climbHorizontally2 && (!movement.sideScrolling.lockMovementOnXAxis && !movement.sideScrolling.lockMovementOnZAxis)){
-						//if we have not reached the sides of the climbable object
-						if (!stopAtSides2 || (!reachedRightPoint || Input.GetAxis("Horizontal") < 0) && (!reachedLeftPoint || Input.GetAxis("Horizontal") > 0)){
-							animator.SetFloat("climbState", Mathf.Abs(Input.GetAxis("Horizontal")) + 1);
-						}
-						else {
-							animator.SetFloat("climbState", Mathf.Lerp(animator.GetFloat("climbState"), 1, 8 * Time.deltaTime));
-						}
-					}
-					if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Climbing")){
-						animator.CrossFade("Climbing", 0f, -1, 0f);
-					}
-				}
-				
-				//horizontal movement
-				if (Input.GetAxis("Horizontal") > 0 && currentlyClimbingWall && climbMovementSpeed2 > 0 && (!reachedRightPoint || !stopAtSides2)){
-					
-					animator.speed = ((climbMovementSpeed2/3)/burstLength)/((climbMovementSpeed2*2)/(3 + climbMovementSpeed2));
-					
-					//animating moving to the right while grabbed on to a ledge
-					if (horizontalClimbSpeed <= 0 || climbingMovement < 0.1f){
-						animator.CrossFade("Climbing", 0.5f, -1, 0f);
-					}
-					horizontalClimbSpeed = 1;
-					
-				}
-				else if (Input.GetAxis("Horizontal") < 0 && currentlyClimbingWall && climbMovementSpeed2 > 0 && (!reachedLeftPoint || !stopAtSides2)){
-					
-					animator.speed = ((climbMovementSpeed2/3)/burstLength)/((climbMovementSpeed2*2)/(3 + climbMovementSpeed2));
-					
-					//animating moving to the left while grabbed on to a ledge
-					if (horizontalClimbSpeed >= 0 || climbingMovement < 0.1f){
-						animator.CrossFade("Climbing", 0.5f, -1, 0f);
-					}
-					horizontalClimbSpeed = -1;
-					
-				}
-				else {
-					animator.SetFloat ("climbSpeedHorizontal", Mathf.Lerp(animator.GetFloat("climbSpeedHorizontal"), 0, 15 * Time.deltaTime) );
-				}
-				//vertical movement
-				if (Input.GetAxis("Vertical") > 0 && currentlyClimbingWall && climbMovementSpeed2 > 0 && !reachedTopPoint){
-					
-					animator.speed = ((climbMovementSpeed2/3)/burstLength)/((climbMovementSpeed2*2)/(3 + climbMovementSpeed2));
-					
-					//animating moving to the right while grabbed on to a ledge
-					if (verticalClimbSpeed <= 0 || climbingMovement < 0.1f){
-						//immediately transitioning to climbing animation
-						animator.CrossFade("Climbing", 0.5f, -1, 0f);
-						
-						//switching climbing arms
-						if (arm == 1){
-							arm = 2;
-						}
-						else {
-							arm = 1;
-						}
-					}
-					verticalClimbSpeed = 1;
-					
-				}
-				else if (Input.GetAxis("Vertical") < 0 && currentlyClimbingWall && climbMovementSpeed2 > 0 && downCanBePressed && !reachedBottomPoint){
-					
-					animator.speed = ((climbMovementSpeed2/3)/burstLength)/((climbMovementSpeed2*2)/(3 + climbMovementSpeed2));
-					
-					//animating moving to the left while grabbed on to a ledge
-					if (verticalClimbSpeed >= 0 || climbingMovement < 0.1f){
-						//immediately transitioning to climbing animation
-						animator.CrossFade("Climbing", 0.5f, -1, 0f);
-						
-						//switching climbing arms
-						if (arm == 1){
-							arm = 2;
-						}
-						else {
-							arm = 1;
-						}
-					}
-					verticalClimbSpeed = -1;
-					
-				}
-				else {
-					animator.SetFloat ("climbSpeedVertical", Mathf.Lerp(animator.GetFloat("climbSpeedVertical"), 0, 15 * Time.deltaTime) );
-				}
-				//switching arm to climb with in animator
-				animator.SetFloat ("armToClimbWith", Mathf.Lerp(animator.GetFloat("armToClimbWith"), arm, 15 * Time.deltaTime) );
-				
-				//setting climbing speeds in animator
-				if (currentlyClimbingWall && climbMovementSpeed2 > 0){
-					
-					//setting vertical climb speed in animator
-					if (Input.GetAxis("Vertical") != 0 && climbVertically2 && climbedUpAlready){
-						if ((!reachedTopPoint || Input.GetAxis("Vertical") < 0) && (!reachedBottomPoint || Input.GetAxis("Vertical") > 0)){
-							animator.SetFloat ("climbSpeedVertical", Mathf.Lerp(animator.GetFloat("climbSpeedVertical"), verticalClimbSpeed, 15 * Time.deltaTime) );
-						}
-					}
-					//setting horizontal climb speed in animator
-					if (Input.GetAxis("Horizontal") != 0 && climbHorizontally2 && (!movement.sideScrolling.lockMovementOnXAxis && !movement.sideScrolling.lockMovementOnZAxis)){
-						//if we have not reached sides or are not moving toward them
-						if (!stopAtSides2 || (!reachedRightPoint || Input.GetAxis("Horizontal") < 0) && (!reachedLeftPoint || Input.GetAxis("Horizontal") > 0)){
-							animator.SetFloat ("climbSpeedHorizontal", Mathf.Lerp(animator.GetFloat("climbSpeedHorizontal"), horizontalClimbSpeed, 15 * Time.deltaTime) );
-						}
-					}
-				}
-				else {
-					animator.SetFloat ("climbSpeedVertical", 0);
-					animator.SetFloat ("climbSpeedHorizontal", 0);
-				}
-				
-			}
-			
-			//animating climbing over a ledge
-			if (pullingUp){
-				if (animator.GetFloat("climbState") != 0 || !animator.GetCurrentAnimatorStateInfo(0).IsName("Climbing")){
-					if (!animatePullingUp){
-						if (onWallLastUpdate){
-							animator.speed = Mathf.Abs(pullUpSpeed/4);
-						}
-						else {
-							animator.speed = pullUpSpeed/4;
-						}
-						animator.SetFloat ("climbState", 0);
-						animator.CrossFade("Climbing", 0f, -1, 0f);
-						animatePullingUp = true;
-					}
-				}
-			}
-			else if (animatePullingUp){
-				animator.speed = 1;
-				animatePullingUp = false;
-			}
-		}
-		
-	}
-	
+
 	void RotatePlayer () {
 		
 		//if joystick/arrow keys are being pushed
 		if ((directionVector.magnitude > 0 || (movement.sideScrolling.lockMovementOnXAxis || movement.sideScrolling.lockMovementOnZAxis)) && !currentlyClimbingWall && !turnBack && !back2){
+
+			float myAngle = 0f;
+			if (Input.GetAxis("Horizontal")!=0f || Input.GetAxis("Vertical") != 0f)
+			{
+				
+				myAngle = Mathf.Atan2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")) * Mathf.Rad2Deg;
 			
-			float myAngle = Mathf.Atan2 (Input.GetAxis ("Horizontal"), Input.GetAxis ("Vertical")) * Mathf.Rad2Deg;
+			}
+			else if(variableJoystick.GetAxis("Horizontal") != 0f || variableJoystick.GetAxis("Vertical") != 0f)
+			{
+			
+				myAngle = Mathf.Atan2(variableJoystick.GetAxis("Horizontal"), variableJoystick.GetAxis("Vertical")) * Mathf.Rad2Deg;
+			
+			}
+			//float myAngle = Mathf.Atan2 (Input.GetAxis ("Horizontal"), Input.GetAxis ("Vertical")) * Mathf.Rad2Deg;
 			
 			//normal rotation from side to side (detected by which way joystick was pushed last)
 			if (!inMidAirFromWallJump && !currentlyOnWall){
 				//getting which direction we are turning to (only used if axis is locked)
+			
 				if (Input.GetAxis("Horizontal") > 0){
 					horizontalValue = 1;
 					swimHorizontalValue = 1;
@@ -2945,6 +2769,7 @@ public class PlayerController : MonoBehaviour {
 					horizontalValue = -1;
 					swimHorizontalValue = -1;
 				}
+			
 			}
 			//normal rotation from side to side (detected by which way the player is closest to facing)
 			else {
@@ -3159,10 +2984,24 @@ public class PlayerController : MonoBehaviour {
 		}
 		
 		//setting the speed of the player
-		h = Mathf.Lerp(h, (Mathf.Abs(Input.GetAxisRaw ("Horizontal")) - Mathf.Abs(Input.GetAxisRaw ("Vertical")) + 1)/2, 8 * Time.deltaTime);
-		v = Mathf.Lerp(v, (Mathf.Abs(Input.GetAxisRaw ("Vertical")) - Mathf.Abs(Input.GetAxisRaw ("Horizontal")) + 1)/2, 8 * Time.deltaTime);
+
+
+		if(Input.GetAxisRaw("Horizontal")!=0 || Input.GetAxisRaw("Vertical")!=0)
+		{
+			h = Mathf.Lerp(h, (Mathf.Abs(Input.GetAxisRaw("Horizontal")) - Mathf.Abs(Input.GetAxisRaw("Vertical")) + 1) / 2, 8 * Time.deltaTime);
+			v = Mathf.Lerp(v, (Mathf.Abs(Input.GetAxisRaw("Vertical")) - Mathf.Abs(Input.GetAxisRaw("Horizontal")) + 1) / 2, 8 * Time.deltaTime);
+		}
+		else if (variableJoystick.GetAxisRaw("Horizontal") !=0 || variableJoystick.GetAxisRaw("Vertical") != 0 )
+		{
+
+			h = Mathf.Lerp(h, (Mathf.Abs(variableJoystick.GetAxisRaw("Horizontal")) - Mathf.Abs(variableJoystick.GetAxisRaw("Vertical") ) + 1) / 2, 8 * Time.deltaTime);
+			v = Mathf.Lerp(v, (Mathf.Abs(variableJoystick.GetAxisRaw("Vertical")) - Mathf.Abs(variableJoystick.GetAxisRaw("Horizontal")) + 1) / 2, 8 * Time.deltaTime);
+			//Debug.Log(variableJoystick.GetAxisRaw("Horizontal"));
+		}
+
+
 		if (directionVector.magnitude != 0){
-			if (Input.GetAxis("Vertical") >= 0){
+			if ((Input.GetAxis("Vertical") >= 0)||variableJoystick.GetAxis("Vertical")>=0){
 				
 				//if not side-scrolling (neither axis is locked)
 				if (!movement.sideScrolling.lockMovementOnXAxis && !movement.sideScrolling.lockMovementOnZAxis){
@@ -3380,16 +3219,34 @@ public class PlayerController : MonoBehaviour {
 		if (grounded.currentlyGrounded && (noCollisionTimer < 5 || Physics.Raycast(pos, Vector3.down, maxGroundedDistance2, noWaterCollisionLayers))) {
 			//since we are grounded, recalculate move direction directly from axes
 			if (!jumpPerformed){
-				moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+				if(Input.GetAxis("Horizontal") !=0 || Input.GetAxis("Vertical")!=0)
+				{
+					moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+				}
+				else if(variableJoystick.GetAxis("Horizontal")!=0 || variableJoystick.GetAxis("Vertical") != 0)
+				{
+					moveDirection = new Vector3(variableJoystick.GetAxis("Horizontal"), 0, variableJoystick.GetAxis("Vertical"));
+				}
 			}
 			else {
-				moveDirection = new Vector3(Input.GetAxis("Horizontal"), moveDirection.y, Input.GetAxis("Vertical"));
+
+				if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
+				{
+					moveDirection = new Vector3(Input.GetAxis("Horizontal"), moveDirection.y, Input.GetAxis("Vertical"));
+				}
+
+				if (variableJoystick.GetAxis("Horizontal") != 0 || variableJoystick.GetAxis("Vertical") != 0)
+				{
+					moveDirection = new Vector3(variableJoystick.GetAxis("Horizontal"), moveDirection.y, variableJoystick.GetAxis("Vertical"));
+				}
+
+
 			}
 			
 			Vector3 desiredPosition = (Quaternion.Euler(transform.eulerAngles.x, bodyRotation, transform.eulerAngles.z) * Vector3.forward);
 			if (directionVector.magnitude != 0){
 				//if we are not allowed to move straight backwards or we are simply not going that direction, do not move straight backwards
-				if ((!movement.firstPerson.walkBackwardsWhenDownKeyIsPressed || Input.GetAxis("Vertical") >= 0 || Input.GetAxis("Horizontal") != 0 || !inFirstPersonMode) && playerCamera.transform.parent != transform){
+				if ((!movement.firstPerson.walkBackwardsWhenDownKeyIsPressed || (Input.GetAxis("Vertical") >= 0 ||variableJoystick.GetAxis("Vertical")>=0 ) || (Input.GetAxis("Horizontal") != 0 || variableJoystick.GetAxis("Horizontal")!=0) || !inFirstPersonMode) && playerCamera.transform.parent != transform){
 					//if the player rotates by pressing the arrow keys/moving the joystick
 					if (!movement.firstPerson.onlyRotateWithCamera || !inFirstPersonMode){
 						moveDirection = new Vector3(desiredPosition.x, moveDirection.y, desiredPosition.z);
@@ -3416,7 +3273,7 @@ public class PlayerController : MonoBehaviour {
 			
 			if (directionVector.magnitude == 0 ){
 				
-				if ((!movement.firstPerson.walkBackwardsWhenDownKeyIsPressed || Input.GetAxis("Vertical") >= 0 || Input.GetAxis("Horizontal") != 0 || !inFirstPersonMode) && playerCamera.transform.parent != transform){
+				if ((!movement.firstPerson.walkBackwardsWhenDownKeyIsPressed || (Input.GetAxis("Vertical") >= 0|| variableJoystick.GetAxis("Vertical") >= 0) || (Input.GetAxis("Horizontal") != 0 || variableJoystick.GetAxis("Horizontal") !=0 )|| !inFirstPersonMode) && playerCamera.transform.parent != transform){
 					//if the player rotates by pressing the arrow keys/moving the joystick
 					if (!movement.firstPerson.onlyRotateWithCamera || !inFirstPersonMode){
 						moveDirection = new Vector3(desiredPosition.x, moveDirection.y, desiredPosition.z);
@@ -3451,10 +3308,14 @@ public class PlayerController : MonoBehaviour {
 			rotationSpeed2 = movement.rotationSpeed;
 		}
 		else {
+			if(Input.GetAxis("Horizontal")!=0 || Input.GetAxis("Vertical")!=0)
 			moveDirection = new Vector3(Input.GetAxis("Horizontal"), moveDirection.y, Input.GetAxis("Vertical"));
+			if (variableJoystick.GetAxis("Horizontal") != 0 || variableJoystick .GetAxis("Vertical") != 0)
+				moveDirection = new Vector3(variableJoystick.GetAxis("Horizontal"), moveDirection.y, variableJoystick.GetAxis("Vertical"));
+
 			if (directionVector.magnitude != 0) {
 				//if we are not allowed to move straight backwards or we are simply not going that direction, do not move straight backwards
-				if ((!movement.firstPerson.walkBackwardsWhenDownKeyIsPressed || Input.GetAxis("Vertical") >= 0 || Input.GetAxis("Horizontal") != 0 || !inFirstPersonMode) && playerCamera.transform.parent != transform){
+				if ((!movement.firstPerson.walkBackwardsWhenDownKeyIsPressed || ((Input.GetAxis("Vertical") >= 0 || Input.GetAxis("Horizontal") != 0)|| (variableJoystick.GetAxis("Vertical") >= 0 || variableJoystick.GetAxis("Horizontal") != 0))  || !inFirstPersonMode) && playerCamera.transform.parent != transform){
 					//if the player rotates by pressing the arrow keys/moving the joystick
 					if (!movement.firstPerson.onlyRotateWithCamera || !inFirstPersonMode){
 						moveDirection = new Vector3(transform.forward.x, moveDirection.y, transform.forward.z);
@@ -3897,7 +3758,7 @@ public class PlayerController : MonoBehaviour {
 			}
 		}
 		//if the crouch attack has finished, set crouchCancelsAttack to true
-		if ((crouching || canCrouch) && !Input.GetButtonDown(attacking.attackInputButton) && attackFinishedLastUpdate){
+		if ((crouching || canCrouch) && (!Input.GetButtonDown(attacking.attackInputButton) || variableJoystick.GetButtonDown("Attack")==false) && attackFinishedLastUpdate){
 			crouchCancelsAttack = true;
 		}
 		if (!crouching && !canCrouch || !movement.crouching.allowCrouching){
